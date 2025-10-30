@@ -1,8 +1,10 @@
-borg_traces_data.csv
-venv
-schedulers/__pycache__/
-models/__pycache__/
+# Python Virtual Environment
+venv/
+
+# Python Cache
 __pycache__/
-schedulers/__pycache__/smart_scheduler.cpython-311.pyc
-__pycache__/smart_scheduler.cpython-311.pyc
-models/__pycache__/burst_predictor.cpython-311.pyc
+*.pyc
+
+# Large Data Files
+borg_traces_data.csv
+data/processed_borg_data.csv
