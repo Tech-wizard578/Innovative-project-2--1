@@ -109,3 +109,13 @@ This is the best way to see the project in action.
 
 ```bash
 python app.py
+
+```
+
+This will launch a Flask web application. Access the interface in your browser at: http://localhost:5000/simple
+
+Option 2: Run the Terminal Demo
+This runs a full comparison directly in your terminal and opens Matplotlib windows for the charts.
+
+```bash
+python main_demo.py
