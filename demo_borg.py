@@ -244,12 +244,9 @@ def main():
     print("   ✓ SmartSched outperforms traditional algorithms on real data")
     print("   ✓ Production-ready performance demonstrated")
     
-    print("\n💡 FOR YOUR EXPO PRESENTATION:")
-    print("   Say: 'We validated our system using Google Borg traces'")
-    print("        'This is the same data Google publishes for research'")
-    print("        'Our ML models achieve 93%+ accuracy on real workloads'")
     
-    print("\n🎯 Ready to impress the judges!")
+    
+   
     print("="*75)
 
 

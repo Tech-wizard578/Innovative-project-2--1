@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  smartsched:
+    build: .
+    container_name: smartsched-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./results:/app/results
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLASK_ENV=production
+    restart: unless-stopped
+    networks:
+      - smartsched-network
+
+  # Optional: Jupyter notebook for experimentation
+  jupyter:
+    build: .
+    container_name: smartsched-jupyter
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./notebooks:/app/notebooks
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    restart: unless-stopped
+    networks:
+      - smartsched-network
+    profiles:
+      - dev  # Only start with: docker-compose --profile dev up
+
+networks:
+  smartsched-network:
+    driver: bridge
+
+volumes:
+  models:
+  data:
+  logs:
+  results:
