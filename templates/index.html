@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartSched Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white">
+    <nav class="bg-slate-800 p-4 flex justify-between items-center shadow-lg">
+        <div class="font-bold text-lg">🚀 SmartSched Dashboard</div>
+        <div class="flex gap-4">
+            <a href="/" class="text-blue-400 font-semibold">Home</a>
+            <a href="/dashboard" class="hover:text-blue-400">Dashboard</a>
+            <a href="/comparison" class="hover:text-blue-400">Comparison</a>
+        </div>
+    </nav>
+
+    <div id="root"></div>
+
+    {% raw %}
+    <script type="text/babel">
+        //
+        // --- FIXES ---
+        // 1. Get React functions from the global 'React' object
+        const { useState, useEffect } = React;
+        
+        // 2. All 'import' and 'export' statements have been removed.
+        //
+        
+        const SmartSchedDashboard = () => {
+            const [isRunning, setIsRunning] = useState(false);
+            const [algorithm, setAlgorithm] = useState('RL_DISPATCHER');
+            const [cores, setCores] = useState(4);
+            const [processes, setProcesses] = useState([]);
+            const [metrics, setMetrics] = useState(null);
+            const [liveGantt, setLiveGantt] = useState([]);
+            const [cpuUsage, setCpuUsage] = useState([92.3, 91.8, 93.1, 90.5]);
+            const [time, setTime] = useState(0);
+
+            useEffect(() => {
+                // This is still demo data.
+                // You can update this to call your /api/presets endpoint!
+                const demoProcesses = [
+                    { pid: 1, arrival: 0, burst: 24, priority: 3, type: 'CPU-Bound', status: 'ready', color: '#3b82f6' },
+                    { pid: 2, arrival: 1, burst: 3, priority: 8, type: 'Interactive', status: 'ready', color: '#10b981' },
+                    { pid: 3, arrival: 2, burst: 8, priority: 5, type: 'I/O-Bound', status: 'ready', color: '#f59e0b' },
+                    { pid: 4, arrival: 3, burst: 12, priority: 2, type: 'CPU-Bound', status: 'ready', color: '#ef4444' },
+                ];
+                setProcesses(demoProcesses);
+            }, []);
+
+            const handleRun = () => setIsRunning(true);
+            const handleReset = () => { setIsRunning(false); setTime(0); setLiveGantt([]); setMetrics(null); };
+
+            return (
+                <div className="p-6">
+                    {/* Replaced icon with emoji */}
+                    <h1 className="text-3xl font-bold mb-4">🧠 SmartSched AI Dashboard</h1>
+                    <p className="text-gray-400 mb-6">Monitor AI-based process scheduling simulation in real time.</p>
+                    
+                    {/* Removed icon tags from buttons */}
+                    <button onClick={handleRun} className="bg-green-500 px-4 py-2 rounded mr-4 hover:bg-green-600">Run</button>
+                    <button onClick={handleReset} className="bg-slate-700 px-4 py-2 rounded hover:bg-slate-600">Reset</button>
+                    
+                    <div className="mt-8 bg-slate-800 rounded-xl p-6">
+                        <p className="text-gray-400">Simulation will appear here...</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<SmartSchedDashboard />);
+    </script>
+    {% endraw %}
+</body>
+</html>
