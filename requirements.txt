@@ -22,7 +22,13 @@ plotly==5.15.0
 # Web Framework (for Flask app)
 flask==2.3.3
 flask-cors==4.0.0
+flask-socketio==5.3.6  # <-- ADDED FOR LIVE DASHBOARD
 
 # Utilities
 tqdm==4.66.1
 joblib==1.3.2
+gunicorn
+
+flask-socketio
+eventlet
+python-socketio

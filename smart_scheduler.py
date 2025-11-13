@@ -7,6 +7,8 @@ import numpy as np
 from collections import deque
 import sys
 import os
+import random
+import time
 
 # Import ML predictor
 try:
@@ -46,6 +48,240 @@ class Process:
     
     def __repr__(self):
         return f"P{self.pid}(AT={self.arrival_time}, BT={self.burst_time}, Pri={self.priority})"
+
+
+class EnergyAwareScheduler:
+    def __init__(self, base_scheduler):
+        self.scheduler = base_scheduler
+        self.power_states = {
+            'active': 1.0,
+            'turbo': 1.5,
+            'powersave': 0.6
+        }
+        self.energy_budget = 100.0  # Energy units
+    
+    def calculate_energy_consumption(self, schedule):
+        """Calculate total energy consumption for a schedule"""
+        total_energy = 0
+        energy_history = []
+        
+        for entry in schedule:
+            # Simulate CPU load based on process characteristics
+            cpu_load = min(1.0, entry.get('cpu_usage', 50) / 100.0)
+            
+            # Determine power state based on load
+            power_state = self.determine_power_state(cpu_load)
+            energy_consumed = cpu_load * self.power_states[power_state]
+            
+            total_energy += energy_consumed
+            energy_history.append({
+                'time': entry.get('start', 0),
+                'energy': energy_consumed,
+                'power_state': power_state,
+                'cpu_load': cpu_load
+            })
+        
+        return {
+            'total_energy': round(total_energy, 2),
+            'energy_history': energy_history,
+            'co2_emissions': round(total_energy * 0.0004, 4),  # kg CO2
+            'cost_savings': round((total_energy / 100) * 0.12, 2)  # $ at $0.12/kWh
+        }
+    
+    def determine_power_state(self, cpu_load):
+        """Determine optimal power state based on CPU load"""
+        if cpu_load > 0.8:
+            return 'turbo'
+        elif cpu_load < 0.3:
+            return 'powersave'
+        else:
+            return 'active'
+    
+    def optimize_for_energy(self, processes):
+        """Optimize scheduling for energy efficiency"""
+        # Run normal scheduling first
+        metrics = self.scheduler.run()
+        
+        # Get the schedule
+        schedule = self.scheduler.gantt_chart
+        
+        # Calculate energy consumption
+        energy_metrics = self.calculate_energy_consumption(schedule)
+        
+        # Add energy metrics to regular metrics
+        metrics.update({
+            'energy_consumption': energy_metrics['total_energy'],
+            'co2_emissions': energy_metrics['co2_emissions'],
+            'cost_savings': energy_metrics['cost_savings'],
+            'energy_efficiency': self.calculate_energy_efficiency(metrics)
+        })
+        
+        return metrics
+    
+    def calculate_energy_efficiency(self, metrics):
+        """Calculate energy efficiency score"""
+        # Simple efficiency calculation
+        cpu_util = metrics.get('cpu_utilization', 50)
+        energy = metrics.get('energy_consumption', 50)
+        
+        # Higher efficiency = high CPU utilization with low energy
+        efficiency = (cpu_util / energy) * 10 if energy > 0 else 0
+        return round(min(100, efficiency), 2)
+
+
+class ExplainableScheduler:
+    def __init__(self, scheduler):
+        self.scheduler = scheduler
+    
+    def explain_decision(self, process, selected_algo):
+        """Generate human-readable explanation for scheduling decision"""
+        
+        # Feature importance analysis
+        features = {
+            'burst_time': process.burst_time,
+            'priority': process.priority,
+            'process_size': process.process_size,
+            'process_type': process.process_type,
+            'arrival_time': process.arrival_time
+        }
+        
+        # Calculate feature importance (simplified)
+        shap_values = self.calculate_shap_importance(features, selected_algo)
+        
+        # Generate reasoning based on algorithm
+        reasoning = self.generate_reasoning(features, selected_algo)
+        
+        # Get alternative algorithms
+        alternatives = self.get_alternative_algorithms(features)
+        
+        explanation = {
+            'algorithm': selected_algo,
+            'confidence': self.calculate_confidence(selected_algo, features),
+            'key_factors': shap_values,
+            'reasoning': reasoning,
+            'alternative_algorithms': alternatives,
+            'process_characteristics': {
+                'type': self.get_process_type_name(process.process_type),
+                'size_category': self.categorize_process_size(process.process_size),
+                'priority_level': self.categorize_priority(process.priority)
+            }
+        }
+        
+        return explanation
+    
+    def calculate_shap_importance(self, features, algorithm):
+        """Calculate simplified SHAP-like feature importance"""
+        importance = {}
+        
+        if algorithm == 'SJF' or algorithm == 'SRTF':
+            importance = {
+                'burst_time': 0.8,
+                'priority': 0.1,
+                'process_size': 0.05,
+                'arrival_time': 0.05
+            }
+        elif algorithm == 'PRIORITY':
+            importance = {
+                'priority': 0.7,
+                'burst_time': 0.2,
+                'arrival_time': 0.1
+            }
+        elif algorithm == 'RR':
+            importance = {
+                'arrival_time': 0.4,
+                'burst_time': 0.3,
+                'priority': 0.3
+            }
+        else:  # SMART_HYBRID or FCFS
+            importance = {
+                'burst_time': 0.4,
+                'priority': 0.3,
+                'arrival_time': 0.2,
+                'process_size': 0.1
+            }
+        
+        return importance
+    
+    def generate_reasoning(self, features, algorithm):
+        """Generate human-readable reasoning"""
+        reasons = []
+        
+        if algorithm == 'SJF':
+            reasons.append(f"Selected SJF because process has burst time of {features['burst_time']} units, which is optimal for shortest job first scheduling.")
+        elif algorithm == 'PRIORITY':
+            reasons.append(f"Selected Priority scheduling because process has priority level {features['priority']}.")
+        elif algorithm == 'RR':
+            reasons.append("Selected Round Robin for fair time-sharing among processes.")
+        elif algorithm == 'SMART_HYBRID':
+            reasons.append("Selected Smart Hybrid algorithm which uses ML predictions and adaptive quantum.")
+        else:
+            reasons.append(f"Selected {algorithm} based on workload characteristics analysis.")
+        
+        # Add feature-based reasoning
+        if features['burst_time'] < 10:
+            reasons.append("Process has short burst time, making it suitable for quick execution.")
+        elif features['burst_time'] > 50:
+            reasons.append("Process has long burst time, requiring careful scheduling consideration.")
+        
+        if features['priority'] > 7:
+            reasons.append("Process has high priority and should be executed promptly.")
+        
+        return " ".join(reasons)
+    
+    def get_alternative_algorithms(self, features):
+        """Suggest alternative algorithms"""
+        alternatives = []
+        
+        # Based on process characteristics
+        if features['burst_time'] < 15:
+            alternatives.append('SJF')
+        if features['priority'] > 5:
+            alternatives.append('PRIORITY')
+        if features['process_type'] == 3:  # Interactive
+            alternatives.append('RR')
+        
+        # Always suggest SMART_HYBRID as best option
+        if 'SMART_HYBRID' not in alternatives:
+            alternatives.append('SMART_HYBRID')
+        
+        return list(set(alternatives))
+    
+    def calculate_confidence(self, algorithm, features):
+        """Calculate confidence score for algorithm selection"""
+        base_confidence = 0.8
+        
+        # Adjust based on features
+        if algorithm == 'SJF' and features['burst_time'] < 20:
+            base_confidence += 0.1
+        elif algorithm == 'PRIORITY' and features['priority'] > 7:
+            base_confidence += 0.15
+        elif algorithm == 'RR' and features['process_type'] == 3:
+            base_confidence += 0.12
+        
+        return min(0.95, base_confidence)
+    
+    def get_process_type_name(self, process_type):
+        """Convert process type number to name"""
+        types = {0: 'CPU-Bound', 1: 'I/O-Bound', 2: 'Mixed', 3: 'Interactive'}
+        return types.get(process_type, 'Unknown')
+    
+    def categorize_process_size(self, size):
+        """Categorize process size"""
+        if size < 200:
+            return 'Small'
+        elif size < 600:
+            return 'Medium'
+        else:
+            return 'Large'
+    
+    def categorize_priority(self, priority):
+        """Categorize priority level"""
+        if priority <= 3:
+            return 'Low'
+        elif priority <= 7:
+            return 'Medium'
+        else:
+            return 'High'
 
 
 class SmartScheduler:
@@ -437,6 +673,23 @@ class SmartScheduler:
             'throughput': throughput,
             'context_switches': self.context_switches
         }
+    
+    def get_energy_aware_metrics(self):
+        """Get energy-aware performance metrics"""
+        metrics = self.get_metrics()
+        
+        # Add energy awareness
+        energy_aware = EnergyAwareScheduler(self)
+        energy_metrics = energy_aware.calculate_energy_consumption(self.gantt_chart)
+        
+        metrics.update({
+            'energy_consumption': energy_metrics['total_energy'],
+            'co2_emissions': energy_metrics['co2_emissions'],
+            'cost_savings': energy_metrics['cost_savings'],
+            'energy_efficiency': energy_aware.calculate_energy_efficiency(metrics)
+        })
+        
+        return metrics
     
     def print_results(self):
         """Display results"""

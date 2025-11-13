@@ -39,10 +39,9 @@ ENV FLASK_ENV=production
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/api/presets')"
-
+    CMD curl --fail http://localhost:5000/api/presets || exit 1
 # Default command - run Flask app
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--workers=4", "--bind", "0.0.0.0:5000", "app:app"]
 
 # Alternative commands (can be overridden):
 # docker run smartsched python main_demo.py

@@ -1,0 +1,29 @@
+# ------ .dockerignore ------
+# This is the most important one!
+# Ignores your 3GB+ virtual environment
+venv/
+.venv/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore Git and IDE files
+.git/
+.vscode/
+.idea/
+
+# Ignore log and result directories
+# These should be empty anyway, not part of the image
+logs/
+results/
+*.log
+*.db
+*.sqlite3
+
+# Ignore large data files
+# These should be mounted as volumes, not built in
+data/
+
+# Don't ignore the files Docker *does* need
+!requirements.txt

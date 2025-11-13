@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartSched Unified Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Inter, sans-serif; background: #0f1724; color: #e6eef8; margin: 0; padding: 20px; }
+    nav { display: flex; gap: 12px; margin-bottom: 20px; }
+    button { background: #1e293b; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #334155; }
+    .tab-content { display: none; }
+    .active { display: block; }
+    .card { background: #111827; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+    h2 { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <h1>SmartSched — AI-Powered Scheduler Dashboard</h1>
+
+  <nav>
+    <button onclick="showTab('performance')">📊 Performance</button>
+    <button onclick="showTab('energy')">🔋 Energy</button>
+    <button onclick="showTab('explain')">🧠 Explainable AI</button>
+    <button onclick="showTab('learning')">📈 Learning Curve</button>
+  </nav>
+
+  <div id="performance" class="tab-content active">
+    <div class="card">
+      <h2>Performance Metrics</h2>
+      <button onclick="fetchPerformance()">Run Scheduler</button>
+      <pre id="perf-output">Awaiting data...</pre>
+    </div>
+  </div>
+
+  <div id="energy" class="tab-content">
+    <div class="card">
+      <h2>Energy & Environmental Impact</h2>
+      <button onclick="fetchEnergy()">Fetch Energy Data</button>
+      <pre id="energy-output">Awaiting data...</pre>
+    </div>
+  </div>
+
+  <div id="explain" class="tab-content">
+    <div class="card">
+      <h2>Explainable AI</h2>
+      <button onclick="fetchExplanation()">Explain AI Decision</button>
+      <pre id="explain-output">Click to explain AI reasoning...</pre>
+    </div>
+  </div>
+
+  <div id="learning" class="tab-content">
+    <div class="card">
+      <h2>Learning Curve Visualization</h2>
+      <button onclick="fetchLearning()">Load Learning Data</button>
+      <canvas id="learning-chart" width="600" height="300"></canvas>
+    </div>
+  </div>
+
+  <script>
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    async function fetchPerformance() {
+      const res = await fetch('/api/schedule', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({algorithm:'SMART_HYBRID', processes:[]})});
+      const data = await res.json();
+      document.getElementById('perf-output').innerText = JSON.stringify(data.metrics, null, 2);
+    }
+
+    async function fetchEnergy() {
+      const res = await fetch('/api/energy-metrics', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({processes:[]})});
+      const data = await res.json();
+      document.getElementById('energy-output').innerText = JSON.stringify(data.energy_metrics, null, 2);
+    }
+
+    async function fetchExplanation() {
+      const res = await fetch('/api/explain', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({process:{pid:1, priority:8, burst_time:5, process_type:0}, algorithm:'SMART_HYBRID'})});
+      const data = await res.json();
+      document.getElementById('explain-output').innerText = JSON.stringify(data.explanation, null, 2);
+    }
+
+    async function fetchLearning() {
+      const res = await fetch('/api/learning-curve');
+      const data = await res.json();
+      const ctx = document.getElementById('learning-chart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.learning_history.map(h => h.episode),
+          datasets: [{
+            label: 'Reward Over Time',
+            data: data.learning_history.map(h => h.reward),
+            borderColor: '#60a5fa',
+            fill: false
+          }]
+        }
+      });
+    }
+  </script>
+</body>
+</html>
