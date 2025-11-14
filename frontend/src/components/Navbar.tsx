@@ -10,11 +10,11 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Home", path: "/" },
-    { name: "Process Builder", path: "/builder" },
+    { name: "ProcessBuilder", path: "/builder" },
     { name: "Scheduler", path: "/scheduler" },
     { name: "Compare", path: "/compare" },
-    { name: "XAI Insights", path: "/insights" },
-    { name: "Energy", path: "/energy" },
+    { name: "XAI Insights", path: "/xai-insights" }, // <-- FIX 1
+    { name: "Energy", path: "/energy-dashboard" }, // <-- FIX 2
   ];
 
   return (

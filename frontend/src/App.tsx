@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import ProcessBuilder from "./pages/ProcessBuilder";
 import Scheduler from "./pages/Scheduler";
 import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Dashboard"; // <-- Good, this is correct
 
 // --- ADD IMPORTS FOR YOUR OTHER PAGES HERE ---
 import Compare from "./pages/Compare"; 
@@ -30,19 +31,22 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* --- Core Routes --- */}
+              {/* --- Core Routes --- */}
               <Route path="/" element={<Home />} />
               <Route path="/builder" element={<ProcessBuilder />} />
               <Route path="/scheduler" element={<Scheduler />} />
 
-              {/* --- ADDED ROUTES TO FIX 404 ERRORS --- */}
-              <Route path="/compare" element={<Compare />} />
-              <Route path="/xai-insights" element={<XAIInsights />} />
-              <Route path="/energy-dashboard" element={<EnergyDashboard />} />
+              {/* --- ADDED ROUTES TO FIX 404 ERRORS --- */}
+              <Route path="/compare" element={<Compare />} />
+              <Route path="/xai-insights" element={<XAIInsights />} />
+              <Route path="/energy-dashboard" element={<EnergyDashboard />} />
               
-              {/* ... add any other routes here ... */}
+              {/* --- ADD THIS MISSING ROUTE --- */}
+              <Route path="/dashboard" element={<Dashboard />} />
 
-              {/* --- Fallback 404 Route (Must be last) --- */}
+              {/* ... add any other routes here ... */}
+
+              {/* --- Fallback 404 Route (Must be last) --- */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
