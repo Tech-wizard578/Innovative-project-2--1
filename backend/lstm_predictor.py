@@ -186,8 +186,8 @@ class LSTMBurstPredictor:
         print(f"\n📊 Model Architecture:")
         self.model.summary()
         
-        # --- FIX 1: Save .keras file ---
-        best_model_file = os.path.join(model_path, 'lstm_best_model.keras')
+        # --- FIX 1: Change to .h5 extension ---
+        best_model_file = os.path.join(model_path, 'lstm_best_model.h5')
         
         callbacks = [
             EarlyStopping(
@@ -204,7 +204,7 @@ class LSTMBurstPredictor:
                 verbose=1
             ),
             ModelCheckpoint(
-                best_model_file, # Use the .keras file
+                best_model_file, # Use the .h5 file
                 monitor='val_loss',
                 save_best_only=True,
                 verbose=0
@@ -227,7 +227,7 @@ class LSTMBurstPredictor:
         
         mae = mean_absolute_error(y_test_orig, y_pred)
         r2 = r2_score(y_test_orig, y_pred)
-        accuracy = (1 - mae / y_test_orig.mean()) * 100
+        accuracy = (1 - mae / np.mean(y_test_orig)) * 100 # Fixed mean calculation
         
         print(f"\n✅ LSTM Model trained successfully!")
         print(f"   {'='*50}")
@@ -239,12 +239,12 @@ class LSTMBurstPredictor:
         self.is_trained = True
         
         if save_model:
-            # --- FIX 2: Save .keras file ---
-            model_file = os.path.join(model_path, 'lstm_model.keras') 
+            # --- FIX 2: Change to .h5 extension ---
+            model_file = os.path.join(model_path, 'lstm_model.h5') 
             scaler_x_file = os.path.join(model_path, 'lstm_scaler_x.pkl')
             scaler_y_file = os.path.join(model_path, 'lstm_scaler_y.pkl')
             
-            self.model.save(model_file) # Save as .keras
+            self.model.save(model_file) # Save as .h5
             with open(scaler_x_file, 'wb') as f:
                 pickle.dump(self.scaler_X, f)
             with open(scaler_y_file, 'wb') as f:
@@ -278,12 +278,13 @@ class LSTMBurstPredictor:
         """
         Load pre-trained LSTM model
         """
-        model_file = os.path.join(model_path, 'lstm_model.keras') # Use .keras
+        # --- FIX 3: Correct indentation and use .h5 ---
+        model_file = os.path.join(model_path, 'lstm_model.h5') # Use .h5
         scaler_x_file = os.path.join(model_path, 'lstm_scaler_x.pkl')
         scaler_y_file = os.path.join(model_path, 'lstm_scaler_y.pkl')
         
         try:
-            # --- FIX 3: Add compile=False ---
+            # --- FIX 4: Add compile=False ---
             self.model = load_model(model_file, compile=False)
             # --- END FIX ---
 
